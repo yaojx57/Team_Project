@@ -7,6 +7,7 @@ from json import JSONEncoder
 
 import numpy as np
 from torch.utils.data import DataLoader
+from utils.estimation_2d import estimation_2d
 
 from common.data_loader import PoseDataSet, PoseBuffer
 from utils.data_utils import fetch, read_3d_data, create_2d_data
@@ -58,6 +59,10 @@ def data_preparation(args):
     poses_valid, poses_valid_2d, actions_valid, cams_valid = fetch(subjects_test, dataset, keypoints, action_filter,
                                                                    stride)
     
+    prediction_2d = estimation_2d(train_loader={'3d': poses_train, '2d':poses_train_2d})
+    poses_train_2d = prediction_2d
+    prediction_valid_2d = estimation_2d(train_loader={'3d': poses_valid, '2d':poses_valid_2d})
+    poses_valid_2d = prediction_valid_2d
 
     train_loader = DataLoader(PoseDataSet(poses_train, poses_train_2d, actions_train, cams_train),
                               batch_size=args.batch_size,

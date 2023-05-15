@@ -11,6 +11,8 @@ from sklearn.neural_network import MLPRegressor
 
 def estimation_2d(train_loader):
     predictions_2d = []
+
+    print('reading train_loader')
     train_data = pd.DataFrame(train_loader)
     training_data = copy.copy(train_data)
     
@@ -19,6 +21,7 @@ def estimation_2d(train_loader):
         for j in range(len(training_data)):
             training_data[i][j] = list(training_data[i][j])
     
+    print('data processing')
     list_training_2d = training_data['2d'].to_list()
     list_training_3d = training_data['3d'].to_list()
 
@@ -34,7 +37,7 @@ def estimation_2d(train_loader):
     x = to_array(list_training_2d)
     y = to_array(list_training_3d)
 
-    def mlp_reg(x_train, y_train, d):
+    def mlp_reg(x_train, y_train, d=2):
         nsamples, nx, ny = np.array(x_train).shape
         nsamplesy, na, nb = np.array(y_train).shape
         regr = MLPRegressor(random_state=1, max_iter=500)\
@@ -45,6 +48,7 @@ def estimation_2d(train_loader):
         else:prediction = None
         return loss, prediction
 
+    print('get 2d data of 3d')
     y_2d = []
     for i in range(len(y)):
         l2 = []
@@ -57,15 +61,15 @@ def estimation_2d(train_loader):
         y_2d.append(l2)
     y_2d = to_array(y_2d)
 
+    print('get predictions')
     predictions = []
     sum_loss = 0
+    sum = 0
     for i in range(len(x)):
         loss, temp =  mlp_reg(x[i], y_2d[i])
         sum_loss += loss
         predictions.append(temp)
         sum += 1
-        if i > 10:
-            break
     mean_loss = loss/sum
     print(mean_loss)
     predictions_2d = to_array(predictions)
@@ -80,5 +84,7 @@ def estimation_2d(train_loader):
     #     if i > 10:
     #         break
     # print(sum_loss/sum)
+    # print("==> estimation complete", predictions_2d)
+    assert predictions_2d[0].shape == train_loader['2d'][0].shape()
 
     return predictions_2d
